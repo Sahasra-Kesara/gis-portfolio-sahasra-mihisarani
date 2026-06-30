@@ -1,5 +1,6 @@
 import React from 'react';
 import Image from 'next/image';
+import Link from 'next/link';
 import { Blog } from '@/data/blogs';
 
 interface BlogCardProps {
@@ -33,17 +34,15 @@ export default function BlogCard({ blog }: BlogCardProps) {
           {blog.description}
         </p>
         
-        <a 
-          href={blog.link}
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link 
+          href={`/blog/${blog.id}`}
           className="inline-flex items-center text-teal-600 font-medium hover:text-teal-700 text-sm tracking-wide uppercase mt-auto"
         >
           Read Article
           <svg className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="square" strokeLinejoin="miter" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
           </svg>
-        </a>
+        </Link>
       </div>
     </div>
   );

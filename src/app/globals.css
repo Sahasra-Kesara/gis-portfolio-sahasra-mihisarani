@@ -1,26 +1,96 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-navy-950: #060d1b;
+  --color-navy-900: #0a1628;
+  --color-navy-800: #0f2035;
+  --color-navy-700: #162d47;
+  --color-navy-600: #1e3a5f;
+  --color-teal-500: #0d9488;
+  --color-teal-600: #0a7a70;
+  --color-teal-400: #2dd4bf;
+  --color-gray-50: #f8fafc;
+  --color-gray-100: #f1f5f9;
+  --color-gray-200: #e2e8f0;
+  --color-gray-300: #cbd5e1;
+  --color-gray-400: #94a3b8;
+  --color-gray-500: #64748b;
+  --color-gray-600: #475569;
+  --color-gray-700: #334155;
+  --color-gray-800: #1e293b;
+  --color-gray-900: #0f172a;
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  color: #1e293b;
+  background-color: #ffffff;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* GIS Grid Pattern Background */
+.gis-grid-bg {
+  background-image:
+    linear-gradient(rgba(13, 148, 136, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(13, 148, 136, 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* Coordinate overlay for hero */
+.coordinate-overlay::before {
+  content: '6.0535° N, 80.2210° E';
+  position: absolute;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  font-family: 'Courier New', monospace;
+  font-size: 0.75rem;
+  color: rgba(13, 148, 136, 0.5);
+  letter-spacing: 0.1em;
+}
+
+/* Section divider */
+.section-divider {
+  width: 3rem;
+  height: 2px;
+  background-color: #0d9488;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #94a3b8;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #64748b;
+}
+
+/* Focus styles */
+*:focus-visible {
+  outline: 2px solid #0d9488;
+  outline-offset: 2px;
+}
+
+/* Link hover transition */
+a {
+  transition: color 0.2s ease;
+}
+
+/* Selection color */
+::selection {
+  background-color: rgba(13, 148, 136, 0.15);
+  color: #0a1628;
 }

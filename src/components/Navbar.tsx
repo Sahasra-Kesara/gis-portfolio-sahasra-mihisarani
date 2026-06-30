@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
+import SearchBar from './SearchBar';
+
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -50,13 +52,13 @@ export default function Navbar() {
         isScrolled ? 'bg-white shadow-sm py-4 border-b border-gray-200' : 'bg-white py-6'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center">
-        <Link href="/" className="text-navy-900 font-bold text-xl tracking-tight z-50 relative">
+      <div className="max-w-7xl mx-auto px-6 flex justify-between items-center gap-4 md:gap-8">
+        <Link href="/" className="text-navy-900 font-bold text-xl tracking-tight z-50 relative shrink-0">
           V.G. SAHASRA MIHISARANI
         </Link>
 
         {/* Desktop Nav */}
-        <nav className="hidden md:flex gap-8 items-center">
+        <nav className="hidden lg:flex gap-8 items-center flex-grow justify-center">
           {navLinks.slice(0, 3).map((link) => (
             <Link
               key={link.name}
@@ -125,12 +127,21 @@ export default function Navbar() {
           ))}
         </nav>
 
+        {/* Search Bar (Desktop) */}
+        <div className="hidden md:block z-50">
+          <SearchBar />
+        </div>
+
         {/* Mobile Nav Toggle */}
-        <button
-          className="md:hidden z-50 relative w-8 h-8 flex flex-col justify-center items-center gap-1.5 focus:outline-none"
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          aria-label="Toggle menu"
-        >
+        <div className="md:hidden z-50 relative flex items-center gap-4">
+          <div className="w-48 sm:w-64">
+            <SearchBar />
+          </div>
+          <button
+            className="w-8 h-8 flex flex-col justify-center items-center gap-1.5 focus:outline-none"
+            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            aria-label="Toggle menu"
+          >
           <span
             className={`block w-6 h-0.5 bg-navy-900 transition-transform duration-300 ${
               isMobileMenuOpen ? 'rotate-45 translate-y-2' : ''
@@ -147,6 +158,7 @@ export default function Navbar() {
             }`}
           />
         </button>
+        </div>
 
         {/* Mobile Nav Panel */}
         <div

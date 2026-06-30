@@ -2,7 +2,7 @@ export type Project = {
   id: number;
   slug: string;
   title: string;
-  image: string;
+  images: string[];
   description: string;
   objective: string;
   tools: string[];
@@ -19,7 +19,7 @@ export const projects: Project[] = [
     slug: 'mangrove-mapping-madol-duwa',
     title:
       'Use of Remote Sensing and GIS Techniques to Map Extent and Changes in Mangrove Forests in Madol Duwa, Sri Lanka',
-    image: '/images/projects/project-1.jpg',
+    images: ['/images/projects/project-1.jpg', '/images/projects/project-1b.jpg'],
     description:
       'A comprehensive study using remote sensing and GIS techniques to map and monitor changes in mangrove forest extent in Madol Duwa, Sri Lanka.',
     objective:
@@ -40,7 +40,7 @@ export const projects: Project[] = [
     slug: 'tsunami-early-warning-hambantota',
     title:
       'Developing Tsunami Early Warning Systems in Hambantota Harbour Area',
-    image: '/images/projects/project-2.jpg',
+    images: ['/images/projects/project-2.jpg', '/images/projects/project-2b.jpg'],
     description:
       'Research focused on developing effective tsunami early warning systems for the Hambantota Harbour area using GIS-based approaches.',
     objective:
@@ -61,7 +61,7 @@ export const projects: Project[] = [
     slug: 'coastal-erosion-southern-sri-lanka',
     title:
       'Coastal Erosion and its Impacts on Tourism and Livelihoods in Southern Sri Lanka',
-    image: '/images/projects/project-3.jpg',
+    images: ['/images/projects/project-3.jpg', '/images/projects/project-3b.jpg'],
     description:
       'Analysis of coastal erosion patterns and their socioeconomic impacts on tourism and livelihoods in the southern coastal region of Sri Lanka.',
     objective:
@@ -82,7 +82,7 @@ export const projects: Project[] = [
     slug: 'nasa-research-koggala',
     title:
       'Proposal for Establishing a NASA Branch in Koggala, Southern Province, Sri Lanka',
-    image: '/images/projects/project-4.jpg',
+    images: ['/images/projects/project-4.jpg'],
     description:
       'A research proposal analyzing the feasibility of establishing a NASA research facility in Koggala, leveraging its strategic geographic location and existing infrastructure.',
     objective:

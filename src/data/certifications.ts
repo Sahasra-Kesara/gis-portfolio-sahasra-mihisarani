@@ -3,7 +3,7 @@ export type Certification = {
   title: string;
   organization: string;
   description: string;
-  image: string;
+  images: string[];
 };
 
 export const certifications: Certification[] = [
@@ -13,7 +13,7 @@ export const certifications: Certification[] = [
     organization: 'Esri',
     description:
       'Comprehensive certification covering fundamental GIS concepts, spatial analysis, and cartographic principles.',
-    image: '/images/certifications/cert-1.jpg',
+    images: ['/images/certifications/cert-1.jpg'],
   },
   {
     id: 2,
@@ -21,7 +21,7 @@ export const certifications: Certification[] = [
     organization: 'Coursera',
     description:
       'Advanced certification in remote sensing techniques, satellite image interpretation, and digital image processing.',
-    image: '/images/certifications/cert-2.jpg',
+    images: ['/images/certifications/cert-2.jpg'],
   },
   {
     id: 3,
@@ -29,7 +29,7 @@ export const certifications: Certification[] = [
     organization: 'Esri',
     description:
       'Certification in spatial data science methodologies, spatial statistics, and geospatial machine learning.',
-    image: '/images/certifications/cert-3.jpg',
+    images: ['/images/certifications/cert-3.jpg'],
   },
   {
     id: 4,
@@ -37,7 +37,7 @@ export const certifications: Certification[] = [
     organization: 'Udemy',
     description:
       'Certification in Python programming for geospatial data analysis, automation, and visualization.',
-    image: '/images/certifications/cert-4.jpg',
+    images: ['/images/certifications/cert-4.jpg'],
   },
   {
     id: 5,
@@ -45,7 +45,7 @@ export const certifications: Certification[] = [
     organization: 'World Bank',
     description:
       'Certification in applying GIS technologies for disaster risk assessment, management, and emergency response planning.',
-    image: '/images/certifications/cert-5.jpg',
+    images: ['/images/certifications/cert-5.jpg'],
   },
   {
     id: 6,
@@ -53,6 +53,6 @@ export const certifications: Certification[] = [
     organization: 'Coursera',
     description:
       'Certification in environmental impact assessment methodologies using geospatial technologies.',
-    image: '/images/certifications/cert-6.jpg',
+    images: ['/images/certifications/cert-6.jpg'],
   },
 ];

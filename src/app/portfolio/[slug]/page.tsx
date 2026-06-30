@@ -1,6 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
-import Image from 'next/image';
+import ImageSlider from '@/components/ImageSlider';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { projects } from '@/data/projects';
@@ -72,20 +72,12 @@ export default async function ProjectDetailPage({ params }: { params: Promise<{ 
         </div>
         
         {/* Main Image */}
-        <div className="relative h-64 md:h-[500px] w-full bg-gray-100 mb-16 border border-gray-200">
-          {project.image ? (
-            <Image
-              src={project.image}
-              alt={project.title}
-              fill
-              className="object-cover"
-              priority
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-              [Project Image Placeholder]
-            </div>
-          )}
+        <div className="mb-16 border border-gray-200 h-64 md:h-[500px]">
+          <ImageSlider 
+            images={project.images} 
+            alt={project.title} 
+            className="relative h-full w-full bg-gray-100 overflow-hidden" 
+          />
         </div>
         
         {/* Content */}

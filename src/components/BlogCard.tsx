@@ -1,7 +1,7 @@
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Blog } from '@/data/blogs';
+import ImageSlider from './ImageSlider';
 
 interface BlogCardProps {
   blog: Blog;
@@ -10,20 +10,11 @@ interface BlogCardProps {
 export default function BlogCard({ blog }: BlogCardProps) {
   return (
     <div className="group bg-white border border-gray-200 hover:border-teal-500/30 transition-colors flex flex-col h-full">
-      <div className="relative h-48 w-full bg-gray-100 overflow-hidden">
-        {blog.image ? (
-          <Image
-            src={blog.image}
-            alt={blog.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-            [Image: {blog.title}]
-          </div>
-        )}
-      </div>
+      <ImageSlider 
+        images={blog.images} 
+        alt={blog.title} 
+        className="relative h-48 w-full bg-gray-100 overflow-hidden" 
+      />
       
       <div className="p-6 flex flex-col flex-grow">
         <h3 className="text-lg font-bold text-navy-900 mb-3 leading-snug">

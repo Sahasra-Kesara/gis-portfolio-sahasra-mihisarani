@@ -1,7 +1,7 @@
 import React from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Project } from '@/data/projects';
+import ImageSlider from './ImageSlider';
 
 interface ProjectCardProps {
   project: Project;
@@ -9,26 +9,18 @@ interface ProjectCardProps {
 
 export default function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <div className="group bg-white border border-gray-200 hover:border-teal-500/30 transition-colors flex flex-col h-full">
-      <div className="relative h-64 w-full bg-gray-100 overflow-hidden">
-        {project.image ? (
-          <Image
-            src={project.image}
-            alt={project.title}
-            fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
-          />
-        ) : (
-          <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-            [Image: {project.title}]
-          </div>
-        )}
-        <div className="absolute top-4 left-4">
-          <span className="bg-white/90 backdrop-blur-sm text-teal-600 text-xs font-semibold px-3 py-1 shadow-sm uppercase tracking-wider">
-            {project.category}
-          </span>
-        </div>
+    <div className="group bg-white border border-gray-200 hover:border-teal-500/30 transition-colors flex flex-col h-full relative">
+      <div className="absolute top-4 left-4 z-10">
+        <span className="bg-white/90 backdrop-blur-sm text-teal-600 text-xs font-semibold px-3 py-1 shadow-sm uppercase tracking-wider">
+          {project.category}
+        </span>
       </div>
+      
+      <ImageSlider 
+        images={project.images} 
+        alt={project.title} 
+        className="relative h-64 w-full bg-gray-100 overflow-hidden" 
+      />
       
       <div className="p-8 flex flex-col flex-grow">
         <h3 className="text-xl font-bold text-navy-900 mb-4 line-clamp-2 leading-snug">

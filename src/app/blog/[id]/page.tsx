@@ -1,6 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
-import Image from 'next/image';
+import ImageSlider from '@/components/ImageSlider';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { blogs } from '@/data/blogs';
@@ -57,20 +57,12 @@ export default async function BlogDetailPage({ params }: { params: Promise<{ id:
         </div>
         
         {/* Main Image */}
-        <div className="relative h-64 md:h-[500px] w-full bg-gray-100 mb-16 border border-gray-200">
-          {blog.image ? (
-            <Image
-              src={blog.image}
-              alt={blog.title}
-              fill
-              className="object-cover"
-              priority
-            />
-          ) : (
-            <div className="absolute inset-0 flex items-center justify-center text-gray-400">
-              [Blog Image Placeholder]
-            </div>
-          )}
+        <div className="mb-16 border border-gray-200 h-64 md:h-[500px]">
+          <ImageSlider 
+            images={blog.images} 
+            alt={blog.title} 
+            className="relative h-full w-full bg-gray-100 overflow-hidden" 
+          />
         </div>
         
         {/* Content */}

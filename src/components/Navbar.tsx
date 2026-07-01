@@ -53,7 +53,7 @@ export default function Navbar() {
       }`}
     >
       <div className="max-w-7xl mx-auto px-6 flex justify-between items-center gap-4 md:gap-8">
-        <Link href="/" className="text-navy-900 font-bold text-xl tracking-tight z-50 relative shrink-0">
+        <Link href="/" className="text-navy-900 font-bold text-sm sm:text-base md:text-xl tracking-tight z-50 relative shrink-0">
           V.G. SAHASRA MIHISARANI
         </Link>
 
@@ -128,15 +128,12 @@ export default function Navbar() {
         </nav>
 
         {/* Search Bar (Desktop) */}
-        <div className="hidden md:block z-50">
+        <div className="hidden lg:block z-50">
           <SearchBar />
         </div>
 
         {/* Mobile Nav Toggle */}
-        <div className="md:hidden z-50 relative flex items-center gap-4">
-          <div className="w-48 sm:w-64">
-            <SearchBar />
-          </div>
+        <div className="lg:hidden z-50 relative flex items-center gap-2 sm:gap-4">
           <button
             className="w-8 h-8 flex flex-col justify-center items-center gap-1.5 focus:outline-none"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -164,9 +161,12 @@ export default function Navbar() {
         <div
           className={`fixed inset-0 bg-white z-40 flex flex-col justify-center transition-transform duration-300 ${
             isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'
-          } md:hidden`}
+          } lg:hidden`}
         >
           <div className="flex flex-col h-full pt-32 px-8 overflow-y-auto pb-12">
+            <div className="mb-8 w-full max-w-sm">
+              <SearchBar />
+            </div>
             <nav className="flex flex-col gap-6">
               {navLinks.slice(0, 3).map((link) => (
                 <Link

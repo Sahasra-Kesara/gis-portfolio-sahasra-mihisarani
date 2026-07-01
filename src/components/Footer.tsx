@@ -1,12 +1,16 @@
 import React from 'react';
 import Link from 'next/link';
+import GisGlobeDynamic from '@/components/GisGlobeDynamic';
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
   
   return (
-    <footer className="bg-navy-900 text-white pt-16 pb-8">
-      <div className="max-w-7xl mx-auto px-6">
+    <footer className="bg-navy-900 text-white pt-16 pb-8 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <GisGlobeDynamic />
+      </div>
+      <div className="max-w-7xl mx-auto px-6 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 border-b border-navy-800 pb-12 mb-8">
           <div>
             <h3 className="text-2xl font-bold tracking-tight mb-2">V.G. Sahasra Mihisarani</h3>

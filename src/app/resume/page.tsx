@@ -1,6 +1,5 @@
 import React from 'react';
 import { Metadata } from 'next';
-import SectionTitle from '@/components/SectionTitle';
 import { accomplishments, reference, socialLinks } from '@/data/resume';
 import { blogs } from '@/data/blogs';
 import { projects } from '@/data/projects';

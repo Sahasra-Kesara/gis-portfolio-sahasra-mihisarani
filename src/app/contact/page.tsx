@@ -76,16 +76,7 @@ export default function ContactPage() {
           
         </div>
 
-        {/* 3D Interactive GIS Art */}
-        <div className="mt-24 w-full">
-          <SectionTitle 
-            title="Galle Fort 3D Model" 
-            subtitle="Explore this interactive 3D representation of Galle Fort, Sri Lanka. Click and drag to navigate the historic peninsula." 
-          />
-          <div className="mt-12 w-full">
-            <ContactGisArtDynamic />
-          </div>
-        </div>
+        {/* 3D Interactive GIS Art moved to home page */}
       </div>
     </div>
   );

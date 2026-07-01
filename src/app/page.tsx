@@ -7,6 +7,7 @@ import BlogCard from "@/components/BlogCard";
 import CertificateCard from "@/components/CertificateCard";
 import SectionTitle from "@/components/SectionTitle";
 import GisGlobeDynamic from '@/components/GisGlobeDynamic';
+import ContactGisArtDynamic from '@/components/ContactGisArtDynamic';
 
 export default function Home() {
   return (
@@ -144,6 +145,18 @@ export default function Home() {
       </section>
 
       {/* Research Activities */}
+      {/* Galle Fort 3D Model (moved from Contact) */}
+      <section className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-6">
+          <SectionTitle
+            title="Galle Fort 3D Model"
+            subtitle="Explore this interactive 3D representation of Galle Fort, Sri Lanka. Click and drag to navigate the historic peninsula."
+          />
+          <div className="mt-12 w-full">
+            <ContactGisArtDynamic />
+          </div>
+        </div>
+      </section>
       <section className="py-24 bg-navy-900 text-white gis-grid-bg relative">
         <div className="max-w-7xl mx-auto px-6 relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">

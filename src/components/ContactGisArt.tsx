@@ -55,7 +55,9 @@ function getTemperatureColor(temp: number): string {
 // ============================================================================
 const ZOOM = 18;          // Tile zoom level (18 gives street/building-level detail)
 const TILE_SIZE = 256;    // Standard XYZ tile size in px
-const GRID = 5;           // 5x5 tile grid — comfortably covers the whole fort peninsula
+const GRID = 7;           // 7x7 tile grid — wide enough to pull in the real
+                           // sandy coastline/beach around the fort, not just
+                           // the walled town itself
 
 function lon2tileX(lon: number, zoom: number) {
   return ((lon + 180) / 360) * Math.pow(2, zoom);
@@ -159,6 +161,47 @@ function useSatelliteTexture() {
   }, []);
 
   return { texture, bounds, failed };
+}
+
+// ============================================================================
+// Sandy fringe — a soft radial-gradient texture rendered just under the edge
+// of the terrain plane, so the transition into the ocean looks like a beach
+// halo rather than a hard-edged floating card. Fully procedural (no network
+// call), so it never fails to load.
+// ============================================================================
+function useBeachTexture() {
+  // Procedural beach texture — synchronous and pure, so useMemo avoids
+  // calling setState inside an effect and keeps the texture stable.
+  return useMemo<THREE.CanvasTexture | null>(() => {
+    if (typeof document === 'undefined') return null;
+    const size = 512;
+    const canvas = document.createElement('canvas');
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    const cx = size / 2;
+    const cy = size / 2;
+    const gradient = ctx.createRadialGradient(cx, cy, size * 0.28, cx, cy, size * 0.5);
+    gradient.addColorStop(0, 'rgba(224, 201, 156, 0.9)');   // wet sand near the shoreline
+    gradient.addColorStop(0.5, 'rgba(214, 194, 150, 0.45)');
+    gradient.addColorStop(1, 'rgba(214, 194, 150, 0)');     // fades into open water
+
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, size, size);
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.needsUpdate = true;
+    // Prefer modern `colorSpace` when available, fall back to `encoding`.
+    const threeRecord = THREE as unknown as Record<string, unknown>;
+    if ('SRGBColorSpace' in threeRecord) {
+      (tex as unknown as { colorSpace?: unknown }).colorSpace = threeRecord.SRGBColorSpace;
+    } else if ('sRGBEncoding' in threeRecord) {
+      (tex as unknown as { encoding?: unknown }).encoding = threeRecord.sRGBEncoding;
+    }
+    return tex;
+  }, []);
 }
 
 // ============================================================================
@@ -549,6 +592,7 @@ function LoadingHint({ text }: { text: string }) {
 export default function ContactGisArt() {
   const { texture, bounds, failed } = useSatelliteTexture();
   const { buildings, loading: buildingsLoading } = useBuildings();
+  const beachTexture = useBeachTexture();
 
   const stillLoading = (!texture && !failed) || buildingsLoading;
   const loadingText = !texture && !failed
@@ -583,6 +627,13 @@ export default function ContactGisArt() {
 
         <Ocean />
         <Terrain texture={texture} bounds={bounds} failed={failed} />
+        {/* Procedural beach halo placed just under the terrain edges */}
+        {beachTexture && bounds && (
+          <mesh rotation={[-Math.PI / 2, 0, 0]} position={[bounds.cx, -0.015, bounds.cz]} receiveShadow>
+            <planeGeometry args={[bounds.w * 1.25, bounds.h * 1.25]} />
+            <meshStandardMaterial map={beachTexture} transparent opacity={1} depthWrite={false} roughness={1} metalness={0} />
+          </mesh>
+        )}
         <Buildings data={buildings} texture={texture} bounds={bounds} />
 
         {galleFortLocations.map((loc) => (

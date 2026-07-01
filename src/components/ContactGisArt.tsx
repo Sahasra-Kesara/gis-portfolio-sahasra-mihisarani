@@ -173,13 +173,9 @@ interface BuildingData {
   height: number;             // meters
 }
 
-// Slightly wider than the marker extent so the fort walls/surroundings are covered
-const BUILDING_BBOX = {
-  south: 6.022,
-  west: 80.2108,
-  north: 6.0312,
-  east: 80.2212,
-};
+// Note: the Overpass bounding box now lives server-side in
+// src/app/api/galle-buildings/route.ts — keep the two in sync if you
+// ever need to widen/narrow the coverage area.
 
 function estimateHeight(tags: Record<string, string>): number {
   if (tags.height) {
@@ -225,10 +221,12 @@ function useBuildings() {
 
     async function fetchBuildings() {
       try {
-        const { south, west, north, east } = BUILDING_BBOX;
-        const query = `[out:json][timeout:25];(way["building"](${south},${west},${north},${east}););out body;>;out skel qt;`;
-        const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
-        const res = await fetch(url);
+        // Fetched through our own API route (see src/app/api/galle-buildings/route.ts)
+        // rather than calling overpass-api.de directly from the browser — the direct
+        // approach can silently fail in production due to CORS/CSP restrictions on
+        // the deployed domain even though it works fine on localhost.
+        const res = await fetch('/api/galle-buildings');
+        if (!res.ok) throw new Error(`API route responded ${res.status}`);
         const json = await res.json();
 
         const nodes = new Map<number, { lat: number; lon: number }>();

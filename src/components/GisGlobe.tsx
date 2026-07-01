@@ -2,7 +2,7 @@
 
 import React, { useRef, Suspense } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useTexture } from '@react-three/drei';
+import { useTexture, OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
 
 function Earth() {
@@ -14,13 +14,6 @@ function Earth() {
     if (groupRef.current && meshRef.current) {
       // Gentle constant rotation for the earth
       meshRef.current.rotation.y += delta * 0.1;
-      
-      // Cursor sensitivity: tilt the entire group towards the pointer
-      const targetRotationX = state.pointer.y * 0.5;
-      const targetRotationY = state.pointer.x * 0.5;
-      
-      groupRef.current.rotation.x += (targetRotationX - groupRef.current.rotation.x) * 0.05;
-      groupRef.current.rotation.y += (targetRotationY - groupRef.current.rotation.y) * 0.05;
     }
   });
 
@@ -52,7 +45,7 @@ if (typeof console !== 'undefined') {
 
 export default function GisGlobe() {
   return (
-    <div className="absolute inset-0 z-0 opacity-80" style={{ pointerEvents: 'auto' }}>
+    <div className="absolute inset-0 z-0 opacity-80 cursor-grab active:cursor-grabbing" style={{ pointerEvents: 'auto' }}>
       <Canvas camera={{ position: [0, 0, 6], fov: 50 }}>
         <ambientLight intensity={1.5} />
         <directionalLight position={[5, 3, 5]} intensity={2} color="#ffffff" />
@@ -60,6 +53,11 @@ export default function GisGlobe() {
         <Suspense fallback={null}>
           <Earth />
         </Suspense>
+        <OrbitControls 
+          enableZoom={false} 
+          enablePan={false} 
+          enableRotate={true}
+        />
       </Canvas>
     </div>
   );

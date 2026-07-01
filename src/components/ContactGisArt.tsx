@@ -22,6 +22,21 @@ function project(lat: number, lng: number): [number, number, number] {
   return [x, 0, z];
 }
 
+// SCALE above turns a *degree* difference into world units. Building heights
+// come in from OSM as real *meters*, which live on a totally different
+// scale — 1 degree of longitude is roughly 111,320m. Without converting,
+// a 6.5m-tall building was being extruded 6.5 world units, i.e. taller than
+// the entire ~8-unit-wide terrain plane (hence the skyscraper effect).
+const METERS_PER_DEGREE = 111320;
+const WORLD_UNITS_PER_METER = SCALE / METERS_PER_DEGREE;
+// Real 2-3 storey buildings are genuinely short relative to a 700m+ wide
+// scene, so a mild exaggeration keeps them visible without looking absurd.
+const HEIGHT_EXAGGERATION = 4;
+
+function metersToWorldHeight(meters: number): number {
+  return meters * WORLD_UNITS_PER_METER * HEIGHT_EXAGGERATION;
+}
+
 // Temperature Color Mapping
 function getTemperatureColor(temp: number): string {
   if (temp < 30) return '#3b82f6'; // Blue (Cool)
@@ -144,6 +159,231 @@ function useSatelliteTexture() {
   }, []);
 
   return { texture, bounds, failed };
+}
+
+// ============================================================================
+// Real Building Footprints & Heights — pulled from OpenStreetMap via the
+// public Overpass API. Each building's footprint is projected through the
+// SAME project() function used everywhere else, then extruded vertically by
+// its real (or estimated) height.
+// ============================================================================
+interface BuildingData {
+  id: string;
+  points: [number, number][]; // [worldX, worldZ] footprint outline
+  height: number;             // meters
+}
+
+// Slightly wider than the marker extent so the fort walls/surroundings are covered
+const BUILDING_BBOX = {
+  south: 6.022,
+  west: 80.2108,
+  north: 6.0312,
+  east: 80.2212,
+};
+
+function estimateHeight(tags: Record<string, string>): number {
+  if (tags.height) {
+    const h = parseFloat(tags.height);
+    if (!isNaN(h) && h > 0) return h;
+  }
+  if (tags['building:levels']) {
+    const levels = parseFloat(tags['building:levels']);
+    if (!isNaN(levels) && levels > 0) return levels * 3.2; // ~3.2m per storey
+  }
+  // Reasonable defaults by building type when OSM has no explicit height
+  const type = tags.building;
+  if (type === 'church' || type === 'cathedral' || type === 'place_of_worship') return 14;
+  if (type === 'hotel' || type === 'apartments') return 10;
+  if (type === 'commercial' || type === 'retail' || type === 'warehouse') return 6;
+  return 6.5; // typical 2-storey colonial-era building
+}
+
+// Shoelace formula — footprint area in world-unit^2
+function polygonArea(points: [number, number][]): number {
+  let sum = 0;
+  for (let i = 0; i < points.length; i++) {
+    const [x1, y1] = points[i];
+    const [x2, y2] = points[(i + 1) % points.length];
+    sum += x1 * y2 - x2 * y1;
+  }
+  return Math.abs(sum) / 2;
+}
+
+// Reasonable footprint area bounds (world-unit^2) to reject OSM data glitches:
+// slivers from missing nodes (near-zero area) and outlier polygons like the
+// occasional mis-tagged block/courtyard that dwarfs every real building.
+const MIN_FOOTPRINT_AREA = 0.0004;
+const MAX_FOOTPRINT_AREA = 0.05;
+const MAX_BUILDING_HEIGHT = 20; // meters — nothing in the fort is a skyscraper
+
+function useBuildings() {
+  const [buildings, setBuildings] = useState<BuildingData[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchBuildings() {
+      try {
+        const { south, west, north, east } = BUILDING_BBOX;
+        const query = `[out:json][timeout:25];(way["building"](${south},${west},${north},${east}););out body;>;out skel qt;`;
+        const url = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(query)}`;
+        const res = await fetch(url);
+        const json = await res.json();
+
+        const nodes = new Map<number, { lat: number; lon: number }>();
+        for (const el of json.elements) {
+          if (el.type === 'node') nodes.set(el.id, { lat: el.lat, lon: el.lon });
+        }
+
+        const result: BuildingData[] = [];
+        for (const el of json.elements) {
+          if (el.type !== 'way' || !el.tags?.building) continue;
+          const nodeIds: number[] = el.nodes || [];
+          if (nodeIds.length < 3) continue;
+
+          const pts: [number, number][] = [];
+          for (const nid of nodeIds) {
+            const n = nodes.get(nid);
+            if (!n) continue;
+            const [x, , z] = project(n.lat, n.lon);
+            pts.push([x, z]);
+          }
+          if (pts.length < 3) continue;
+
+          // Reject ways where too many referenced nodes were missing — these
+          // produce degenerate slivers that extrude into thin spikes.
+          if (pts.length < nodeIds.length * 0.8) continue;
+
+          const area = polygonArea(pts);
+          if (area < MIN_FOOTPRINT_AREA || area > MAX_FOOTPRINT_AREA) continue;
+
+          result.push({
+            id: String(el.id),
+            points: pts,
+            height: Math.min(estimateHeight(el.tags), MAX_BUILDING_HEIGHT),
+          });
+        }
+
+        if (!cancelled) setBuildings(result);
+      } catch (e) {
+        console.error('Failed to load building footprints:', e);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchBuildings();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  return { buildings, loading };
+}
+
+// Deterministic pseudo-random value in [0, 1) derived from a string id.
+// Used instead of Math.random() so render output stays pure/stable.
+function hashToUnitFloat(id: string): number {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) {
+    h = (h * 31 + id.charCodeAt(i)) | 0;
+  }
+  return (h >>> 0) / 4294967295;
+}
+
+// Single extruded building
+function Building({
+  id,
+  points,
+  height,
+  texture,
+  bounds,
+}: {
+  id: string;
+  points: [number, number][];
+  height: number;
+  texture: THREE.CanvasTexture | null;
+  bounds: TerrainBounds | null;
+}) {
+  const worldHeight = metersToWorldHeight(height);
+
+  const geometry = useMemo(() => {
+    const shape = new THREE.Shape();
+    points.forEach(([x, z], i) => {
+      // Shape lives in a local XY plane; we rotate the finished geometry
+      // below so this footprint ends up flat on the ground (X/Z) and the
+      // extrusion depth becomes height along world Y.
+      if (i === 0) shape.moveTo(x, -z);
+      else shape.lineTo(x, -z);
+    });
+    const geo = new THREE.ExtrudeGeometry(shape, { depth: worldHeight, bevelEnabled: false });
+    geo.rotateX(-Math.PI / 2);
+
+    // Recompute UVs so the roof/cap faces sample the SAME real satellite
+    // photo used for the terrain, aligned to actual world position — this
+    // is what makes the rooftops look like real imagery instead of a flat
+    // color. Uses the identical mapping as the Terrain plane's default UVs.
+    if (bounds) {
+      const pos = geo.attributes.position;
+      const uv = new Float32Array(pos.count * 2);
+      for (let i = 0; i < pos.count; i++) {
+        const wx = pos.getX(i);
+        const wz = pos.getZ(i);
+        const u = (wx - bounds.cx + bounds.w / 2) / bounds.w;
+        const v = (bounds.cz - wz + bounds.h / 2) / bounds.h;
+        uv[i * 2] = u;
+        uv[i * 2 + 1] = v;
+      }
+      geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+    }
+
+    return geo;
+  }, [points, worldHeight, bounds]);
+
+  const wallColor = useMemo(() => {
+    // Subtle warm sandstone/terracotta tint variation per building,
+    // deterministic from the building's id rather than Math.random().
+    const hue = 28 + hashToUnitFloat(id) * 10;
+    const lightness = Math.max(55, 74 - height * 1.1);
+    return new THREE.Color(`hsl(${hue}, 32%, ${lightness}%)`);
+  }, [id, height]);
+
+  // Group 0 = top/bottom caps (roof) — textured with the real satellite photo.
+  // Group 1 = extruded side walls (solid tinted color).
+  // (three.js's ExtrudeGeometry assigns lid faces to group 0 and side faces
+  // to group 1 — easy to get backwards.)
+  const materials = useMemo(
+    () => [
+      texture
+        ? new THREE.MeshStandardMaterial({ map: texture, roughness: 0.9, metalness: 0 })
+        : new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.85, metalness: 0.05 }),
+      new THREE.MeshStandardMaterial({ color: wallColor, roughness: 0.85, metalness: 0.05 }),
+    ],
+    [wallColor, texture]
+  );
+
+  return (
+    <mesh geometry={geometry} material={materials} position={[0, 0.01, 0]} castShadow receiveShadow />
+  );
+}
+
+function Buildings({
+  data,
+  texture,
+  bounds,
+}: {
+  data: BuildingData[];
+  texture: THREE.CanvasTexture | null;
+  bounds: TerrainBounds | null;
+}) {
+  return (
+    <group>
+      {data.map((b) => (
+        <Building key={b.id} id={b.id} points={b.points} height={b.height} texture={texture} bounds={bounds} />
+      ))}
+    </group>
+  );
 }
 
 // 1. Realistic Terrain (real Galle Fort satellite imagery on a ground plane)
@@ -300,16 +540,22 @@ function Legend() {
   );
 }
 
-function LoadingHint() {
+function LoadingHint({ text }: { text: string }) {
   return (
     <div className="absolute top-4 right-4 lg:top-6 lg:right-6 z-10 pointer-events-none bg-white/80 backdrop-blur-md text-navy-900 text-xs px-3 py-1.5 rounded-full border border-white shadow-sm">
-      Loading real satellite imagery…
+      {text}
     </div>
   );
 }
 
 export default function ContactGisArt() {
   const { texture, bounds, failed } = useSatelliteTexture();
+  const { buildings, loading: buildingsLoading } = useBuildings();
+
+  const stillLoading = (!texture && !failed) || buildingsLoading;
+  const loadingText = !texture && !failed
+    ? 'Loading real satellite imagery…'
+    : 'Loading real building footprints…';
 
   return (
     <div className="w-full h-[500px] md:h-[600px] lg:h-[700px] rounded-3xl overflow-hidden border border-sky-400 shadow-2xl relative">
@@ -321,7 +567,7 @@ export default function ContactGisArt() {
       </div>
 
       <Legend />
-      {!texture && !failed && <LoadingHint />}
+      {stillLoading && <LoadingHint text={loadingText} />}
 
       <Canvas camera={{ position: [0, 7, 9], fov: 45 }} shadows>
         <Sky sunPosition={[10, 8, 5]} turbidity={4} rayleigh={1.2} mieCoefficient={0.005} mieDirectionalG={0.8} />
@@ -339,6 +585,7 @@ export default function ContactGisArt() {
 
         <Ocean />
         <Terrain texture={texture} bounds={bounds} failed={failed} />
+        <Buildings data={buildings} texture={texture} bounds={bounds} />
 
         {galleFortLocations.map((loc) => (
           <DataMarker key={loc.id} data={loc} />

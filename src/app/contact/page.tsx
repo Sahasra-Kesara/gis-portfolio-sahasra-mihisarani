@@ -3,7 +3,6 @@ import { Metadata } from 'next';
 import SectionTitle from '@/components/SectionTitle';
 import ContactForm from '@/components/ContactForm';
 import { socialLinks } from '@/data/resume';
-import ContactGisArtDynamic from '@/components/ContactGisArtDynamic';
 
 export const metadata: Metadata = {
   title: 'Contact',

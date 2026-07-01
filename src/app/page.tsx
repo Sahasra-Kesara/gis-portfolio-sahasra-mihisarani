@@ -11,41 +11,47 @@ import GisGlobeDynamic from '@/components/GisGlobeDynamic';
 export default function Home() {
   return (
     <div className="flex flex-col">
-      {/* Hero Section */}
       <section className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-gray-50 border-b border-gray-200 gis-grid-bg coordinate-overlay">
-        <GisGlobeDynamic />
-        <div className="max-w-7xl mx-auto px-6 w-full relative z-10 py-20 pointer-events-none">
-          <div className="max-w-3xl pointer-events-auto bg-white/40 p-8 rounded-2xl backdrop-blur-sm border border-white/50 shadow-sm">
-            <h2 className="text-teal-600 font-bold tracking-widest uppercase mb-4 text-sm">
-              Geoinformatics Undergraduate | GIS Researcher | Remote Sensing Enthusiast
-            </h2>
-            <h1 className="text-5xl md:text-7xl font-bold text-navy-950 tracking-tight leading-tight mb-8">
-              V.G. Sahasra <br className="hidden md:block" /> Mihisarani
-            </h1>
-            <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl leading-relaxed">
-              &quot;Exploring the world through geospatial technology, remote sensing, and spatial analysis to understand environmental challenges and create meaningful solutions.&quot;
-            </p>
-            
-            <div className="flex flex-wrap gap-4">
-              <Link 
-                href="/portfolio" 
-                className="bg-navy-900 text-white font-semibold uppercase tracking-wider text-sm px-8 py-4 hover:bg-navy-800 transition-colors"
-              >
-                View Portfolio
-              </Link>
-              <a 
-                href="/resume.pdf" 
-                target="_blank"
-                className="bg-teal-600 text-white font-semibold uppercase tracking-wider text-sm px-8 py-4 hover:bg-teal-700 transition-colors"
-              >
-                Download Resume
-              </a>
-              <Link 
-                href="/contact" 
-                className="bg-transparent border border-navy-900 text-navy-900 font-semibold uppercase tracking-wider text-sm px-8 py-4 hover:bg-navy-900 hover:text-white transition-colors"
-              >
-                Contact Me
-              </Link>
+        <div className="max-w-7xl mx-auto px-6 w-full relative z-10 py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column: Text */}
+            <div className="max-w-3xl bg-white/40 p-8 rounded-2xl backdrop-blur-sm border border-white/50 shadow-sm">
+              <h2 className="text-teal-600 font-bold tracking-widest uppercase mb-4 text-sm">
+                Geoinformatics Undergraduate | GIS Researcher | Remote Sensing Enthusiast
+              </h2>
+              <h1 className="text-5xl md:text-7xl font-bold text-navy-950 tracking-tight leading-tight mb-8">
+                V.G. Sahasra <br className="hidden md:block" /> Mihisarani
+              </h1>
+              <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl leading-relaxed">
+                &quot;Exploring the world through geospatial technology, remote sensing, and spatial analysis to understand environmental challenges and create meaningful solutions.&quot;
+              </p>
+              
+              <div className="flex flex-wrap gap-4">
+                <Link 
+                  href="/portfolio" 
+                  className="bg-navy-900 text-white font-semibold uppercase tracking-wider text-sm px-8 py-4 hover:bg-navy-800 transition-colors"
+                >
+                  View Portfolio
+                </Link>
+                <a 
+                  href="/resume.pdf" 
+                  target="_blank"
+                  className="bg-teal-600 text-white font-semibold uppercase tracking-wider text-sm px-8 py-4 hover:bg-teal-700 transition-colors"
+                >
+                  Download Resume
+                </a>
+                <Link 
+                  href="/contact" 
+                  className="bg-transparent border border-navy-900 text-navy-900 font-semibold uppercase tracking-wider text-sm px-8 py-4 hover:bg-navy-900 hover:text-white transition-colors"
+                >
+                  Contact Me
+                </Link>
+              </div>
+            </div>
+
+            {/* Right Column: Globe */}
+            <div className="relative h-[350px] lg:h-[600px] w-full">
+              <GisGlobeDynamic />
             </div>
           </div>
         </div>

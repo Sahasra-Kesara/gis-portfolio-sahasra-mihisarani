@@ -4,6 +4,8 @@ import Link from 'next/link';
 import SectionTitle from '@/components/SectionTitle';
 import { education, skills } from '@/data/resume';
 
+import AboutGisElementsDynamic from '@/components/AboutGisElementsDynamic';
+
 export const metadata: Metadata = {
   title: 'About Me',
   description: 'Learn more about V.G. Sahasra Mihisarani, a Geoinformatics undergraduate specializing in GIS, Remote Sensing, and Spatial Analysis.',
@@ -15,38 +17,49 @@ export default function AboutPage() {
       <div className="max-w-7xl mx-auto px-6">
         <SectionTitle title="About Me" subtitle="My academic journey and technical expertise in Geoinformatics." />
         
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 mt-12">
-          {/* Profile Summary */}
-          <div className="lg:col-span-1">
-            <h3 className="text-2xl font-bold text-navy-900 mb-6">Profile Summary</h3>
-            <div className="prose prose-lg text-gray-600 mb-8">
-              <p className="mb-4">
-                I am a Geoinformatics undergraduate specializing in GIS, Remote Sensing, Spatial Analysis, and Environmental Applications.
-              </p>
-              <p>
-                My interests include satellite image analysis, disaster risk management, coastal studies, and applying geospatial technologies to solve real-world problems.
-              </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mt-12">
+          {/* Left Column: Profile and Education */}
+          <div className="space-y-16">
+            {/* Profile Summary */}
+            <div>
+              <h3 className="text-2xl font-bold text-navy-900 mb-6">Profile Summary</h3>
+              <div className="prose prose-lg text-gray-600 mb-8">
+                <p className="mb-4">
+                  I am a Geoinformatics undergraduate specializing in GIS, Remote Sensing, Spatial Analysis, and Environmental Applications.
+                </p>
+                <p>
+                  My interests include satellite image analysis, disaster risk management, coastal studies, and applying geospatial technologies to solve real-world problems.
+                </p>
+              </div>
+              <Link 
+                href="/resume" 
+                className="inline-block bg-teal-600 text-white font-semibold uppercase tracking-wider text-sm px-8 py-4 hover:bg-teal-700 transition-colors"
+              >
+                Read Full Resume
+              </Link>
             </div>
-            <Link 
-              href="/resume" 
-              className="inline-block bg-teal-600 text-white font-semibold uppercase tracking-wider text-sm px-8 py-4 hover:bg-teal-700 transition-colors"
-            >
-              Read Full Resume
-            </Link>
+            
+            {/* Education Timeline */}
+            <div>
+              <h3 className="text-2xl font-bold text-navy-900 mb-8">Education</h3>
+              <div className="relative border-l-2 border-teal-500 pl-8 ml-4 space-y-12">
+                {education.map((item, index) => (
+                  <div key={index} className="relative">
+                    <div className="absolute -left-[41px] top-1.5 w-4 h-4 rounded-full bg-white border-4 border-teal-500" />
+                    <h4 className="text-xl font-bold text-navy-900">{item.degree}</h4>
+                    <p className="text-teal-600 font-medium my-1">{item.institution}</p>
+                    <p className="text-gray-500 text-sm">{item.period}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
           
-          {/* Education Timeline */}
-          <div className="lg:col-span-2">
-            <h3 className="text-2xl font-bold text-navy-900 mb-8">Education</h3>
-            <div className="relative border-l-2 border-teal-500 pl-8 ml-4 space-y-12">
-              {education.map((item, index) => (
-                <div key={index} className="relative">
-                  <div className="absolute -left-[41px] top-1.5 w-4 h-4 rounded-full bg-white border-4 border-teal-500" />
-                  <h4 className="text-xl font-bold text-navy-900">{item.degree}</h4>
-                  <p className="text-teal-600 font-medium my-1">{item.institution}</p>
-                  <p className="text-gray-500 text-sm">{item.period}</p>
-                </div>
-              ))}
+          {/* Right Column: 3D GIS Elements */}
+          <div className="bg-gradient-to-br from-gray-50 to-teal-50/20 rounded-3xl border border-gray-100 flex items-center justify-center p-2 relative overflow-hidden">
+            <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,rgba(20,184,166,0.05)_0%,transparent_70%)]"></div>
+            <div className="w-full h-full min-h-[300px] lg:min-h-[600px] relative z-10">
+              <AboutGisElementsDynamic />
             </div>
           </div>
         </div>

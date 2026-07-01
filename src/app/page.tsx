@@ -1,4 +1,3 @@
-import Image from "next/image";
 import Link from "next/link";
 import { projects } from "@/data/projects";
 import { blogs } from "@/data/blogs";
@@ -7,14 +6,16 @@ import ProjectCard from "@/components/ProjectCard";
 import BlogCard from "@/components/BlogCard";
 import CertificateCard from "@/components/CertificateCard";
 import SectionTitle from "@/components/SectionTitle";
+import GisGlobeDynamic from '@/components/GisGlobeDynamic';
 
 export default function Home() {
   return (
     <div className="flex flex-col">
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center pt-20 overflow-hidden bg-gray-50 border-b border-gray-200 gis-grid-bg coordinate-overlay">
-        <div className="max-w-7xl mx-auto px-6 w-full relative z-10 py-20">
-          <div className="max-w-3xl">
+        <GisGlobeDynamic />
+        <div className="max-w-7xl mx-auto px-6 w-full relative z-10 py-20 pointer-events-none">
+          <div className="max-w-3xl pointer-events-auto bg-white/40 p-8 rounded-2xl backdrop-blur-sm border border-white/50 shadow-sm">
             <h2 className="text-teal-600 font-bold tracking-widest uppercase mb-4 text-sm">
               Geoinformatics Undergraduate | GIS Researcher | Remote Sensing Enthusiast
             </h2>
@@ -22,7 +23,7 @@ export default function Home() {
               V.G. Sahasra <br className="hidden md:block" /> Mihisarani
             </h1>
             <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl leading-relaxed">
-              "Exploring the world through geospatial technology, remote sensing, and spatial analysis to understand environmental challenges and create meaningful solutions."
+              &quot;Exploring the world through geospatial technology, remote sensing, and spatial analysis to understand environmental challenges and create meaningful solutions.&quot;
             </p>
             
             <div className="flex flex-wrap gap-4">
@@ -70,7 +71,7 @@ export default function Home() {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {projects.slice(0, 2).map((project) => (
+            {projects.filter(p => p.images && p.images.length > 0).slice(0, 2).map((project) => (
               <ProjectCard key={project.id} project={project} />
             ))}
           </div>
@@ -120,7 +121,7 @@ export default function Home() {
           />
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mt-12">
-            {certifications.map((cert) => (
+            {certifications.slice(0, 6).map((cert) => (
               <CertificateCard key={cert.id} certification={cert} />
             ))}
           </div>

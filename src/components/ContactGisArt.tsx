@@ -53,11 +53,10 @@ function getTemperatureColor(temp: number): string {
 // draped over a flat ground plane sized/positioned using the SAME project()
 // function as the markers — so the imagery and the pins align.
 // ============================================================================
-const ZOOM = 18;          // Tile zoom level (18 gives street/building-level detail)
-const TILE_SIZE = 256;    // Standard XYZ tile size in px
-const GRID = 7;           // 7x7 tile grid — wide enough to pull in the real
-                           // sandy coastline/beach around the fort, not just
-                           // the walled town itself
+const ZOOM = 16;          // Lower zoom for faster first paint and less tile work
+const TILE_SIZE = 256;     // Standard XYZ tile size in px
+const GRID = 3;            // Smaller tile grid keeps the scene responsive while still
+                           // covering the coastal context around Galle Fort
 
 function lon2tileX(lon: number, zoom: number) {
   return ((lon + 180) / 360) * Math.pow(2, zoom);
@@ -81,13 +80,70 @@ interface TerrainBounds {
   cz: number;
 }
 
+function createFallbackTerrainTexture() {
+  const size = 512;
+  const canvas = document.createElement('canvas');
+  canvas.width = size;
+  canvas.height = size;
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return null;
+
+  const sky = ctx.createLinearGradient(0, 0, size, size);
+  sky.addColorStop(0, '#d8b97b');
+  sky.addColorStop(0.45, '#e4c78f');
+  sky.addColorStop(1, '#b9995e');
+  ctx.fillStyle = sky;
+  ctx.fillRect(0, 0, size, size);
+
+  const beach = ctx.createRadialGradient(size * 0.28, size * 0.62, size * 0.08, size * 0.28, size * 0.62, size * 0.7);
+  beach.addColorStop(0, 'rgba(255,245,208,0.95)');
+  beach.addColorStop(0.5, 'rgba(235,221,179,0.6)');
+  beach.addColorStop(1, 'rgba(235,221,179,0)');
+  ctx.fillStyle = beach;
+  ctx.fillRect(0, 0, size, size);
+
+  ctx.strokeStyle = 'rgba(120, 94, 45, 0.32)';
+  ctx.lineWidth = 2;
+  for (let i = 0; i < 5; i++) {
+    const y = (i / 5) * size;
+    ctx.beginPath();
+    ctx.moveTo(0, y);
+    ctx.lineTo(size, y + (i % 2 === 0 ? 0 : size * 0.06));
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = 'rgba(95, 73, 35, 0.24)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i < 4; i++) {
+    const x = (i / 4) * size;
+    ctx.beginPath();
+    ctx.moveTo(x, 0);
+    ctx.lineTo(x + size * 0.12, size);
+    ctx.stroke();
+  }
+
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  tex.anisotropy = 2;
+  tex.needsUpdate = true;
+  return tex;
+}
+
 function useSatelliteTexture() {
   const [texture, setTexture] = useState<THREE.CanvasTexture | null>(null);
   const [bounds, setBounds] = useState<TerrainBounds | null>(null);
   const [failed, setFailed] = useState(false);
+  const [isLoadingTiles, setIsLoadingTiles] = useState(true);
 
   useEffect(() => {
     let cancelled = false;
+
+    if (typeof document !== 'undefined') {
+      const fallback = createFallbackTerrainTexture();
+      if (!cancelled && fallback) {
+        setTexture(fallback);
+      }
+    }
 
     async function build() {
       try {
@@ -95,6 +151,23 @@ function useSatelliteTexture() {
         const centerY = lat2tileY(CENTER_LAT, ZOOM);
         const startTileX = Math.floor(centerX) - Math.floor(GRID / 2);
         const startTileY = Math.floor(centerY) - Math.floor(GRID / 2);
+
+        const nwLon = tile2lon(startTileX, ZOOM);
+        const nwLat = tile2lat(startTileY, ZOOM);
+        const seLon = tile2lon(startTileX + GRID, ZOOM);
+        const seLat = tile2lat(startTileY + GRID, ZOOM);
+
+        const [x1, , z1] = project(nwLat, nwLon);
+        const [x2, , z2] = project(seLat, seLon);
+
+        if (!cancelled) {
+          setBounds({
+            w: Math.abs(x2 - x1),
+            h: Math.abs(z2 - z1),
+            cx: (x1 + x2) / 2,
+            cz: (z1 + z2) / 2,
+          });
+        }
 
         const canvas = document.createElement('canvas');
         canvas.width = GRID * TILE_SIZE;
@@ -116,7 +189,7 @@ function useSatelliteTexture() {
                   ctx.drawImage(img, col * TILE_SIZE, row * TILE_SIZE, TILE_SIZE, TILE_SIZE);
                   resolve();
                 };
-                img.onerror = () => resolve(); // leave that tile blank rather than fail the whole grid
+                img.onerror = () => resolve();
                 img.src = url;
               })
             );
@@ -128,29 +201,19 @@ function useSatelliteTexture() {
 
         const tex = new THREE.CanvasTexture(canvas);
         tex.colorSpace = THREE.SRGBColorSpace;
-        tex.anisotropy = 8;
+        tex.anisotropy = 6;
         tex.needsUpdate = true;
 
-        // Geographic bounds of the stitched canvas, converted to world space
-        // through the SAME project() used for markers, so texture <-> pins line up.
-        const nwLon = tile2lon(startTileX, ZOOM);
-        const nwLat = tile2lat(startTileY, ZOOM);
-        const seLon = tile2lon(startTileX + GRID, ZOOM);
-        const seLat = tile2lat(startTileY + GRID, ZOOM);
-
-        const [x1, , z1] = project(nwLat, nwLon);
-        const [x2, , z2] = project(seLat, seLon);
-
-        setBounds({
-          w: Math.abs(x2 - x1),
-          h: Math.abs(z2 - z1),
-          cx: (x1 + x2) / 2,
-          cz: (z1 + z2) / 2,
-        });
-        setTexture(tex);
+        if (!cancelled) {
+          setTexture(tex);
+          setIsLoadingTiles(false);
+        }
       } catch (e) {
         console.error('Satellite texture build failed:', e);
-        if (!cancelled) setFailed(true);
+        if (!cancelled) {
+          setFailed(true);
+          setIsLoadingTiles(false);
+        }
       }
     }
 
@@ -160,7 +223,7 @@ function useSatelliteTexture() {
     };
   }, []);
 
-  return { texture, bounds, failed };
+  return { texture, bounds, failed, isLoadingTiles };
 }
 
 // ============================================================================
@@ -590,13 +653,13 @@ function LoadingHint({ text }: { text: string }) {
 }
 
 export default function ContactGisArt() {
-  const { texture, bounds, failed } = useSatelliteTexture();
+  const { texture, bounds, failed, isLoadingTiles } = useSatelliteTexture();
   const { buildings, loading: buildingsLoading } = useBuildings();
   const beachTexture = useBeachTexture();
 
-  const stillLoading = (!texture && !failed) || buildingsLoading;
-  const loadingText = !texture && !failed
-    ? 'Loading real satellite imagery…'
+  const stillLoading = (isLoadingTiles && !failed) || buildingsLoading;
+  const loadingText = isLoadingTiles && !failed
+    ? 'Loading fast terrain preview…'
     : 'Loading real building footprints…';
 
   return (
@@ -611,7 +674,7 @@ export default function ContactGisArt() {
       <Legend />
       {stillLoading && <LoadingHint text={loadingText} />}
 
-      <Canvas camera={{ position: [0, 7, 9], fov: 45 }} shadows>
+      <Canvas camera={{ position: [0, 7, 9], fov: 45 }} shadows dpr={[1, 1.2]} gl={{ antialias: false }}>
         <Sky sunPosition={[10, 8, 5]} turbidity={4} rayleigh={1.2} mieCoefficient={0.005} mieDirectionalG={0.8} />
         <fog attach="fog" args={['#bcd8e8', 15, 45]} />
 
@@ -621,8 +684,8 @@ export default function ContactGisArt() {
           intensity={1.6}
           color="#fffbeb"
           castShadow
-          shadow-mapSize-width={2048}
-          shadow-mapSize-height={2048}
+          shadow-mapSize-width={1024}
+          shadow-mapSize-height={1024}
         />
 
         <Ocean />
